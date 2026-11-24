@@ -1,91 +1,162 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <ctype.h>
+#include <limits.h>
 
 
 #include "headers.h"
+#include "push_back.c"
+#include "digit.c"
+#include "clear_deq.c"
+
+
 
 int main() {
 
-    size_t current_memory = START_MEMORY;
-    char *seq = malloc(current_memory);
-    char *tmp;
-    size_t len=0;
+    struct Deque d = {0};
+    struct Deque *deque = &d;
+
+    struct Node *start;
+
+    int c=0;
     char *piece;
-    double number=0.0;
-    char extra;
+
+    char *temp;
+    int piece_capacity=0;
+    int len_piece=0;
+    int v_f=0;
     int ok=0;
-    int index=0;
-
     
-    printf("Введите последовательность чисел через пробел!\n");
+
     while (1) {
-        ok=1;
-        fgets(seq, START_MEMORY, stdin);
+        ok=0;
+        piece_capacity = START_MEMORY;
 
-        while(strchr(seq, '\n')==NULL) {
-            len = strlen(seq);
-            current_memory *=2;
-            tmp = realloc(seq, current_memory);
 
-            fgets(tmp + len, (int)(current_memory - len), stdin);
+        printf("Введите последовательность чисел через пробел!\n");
+        printf("Числа должны быть от %d до %d\n", INT_MIN, INT_MAX);
 
-            seq = tmp;
 
-        }
+        while (2) {
 
-        len = strlen(seq);
-        *(seq + len-1) = '\0';
-    
-        piece = strtok(seq, " ");
+            piece = malloc(START_MEMORY);
+      
+            if (piece == NULL) {
+                printf("Не удалось выделить память!\n");
+                return 1;
+            }
 
-        if (piece == NULL) {
-            printf("Вы не ввели ни одного числа. Попробуйте снова.\n");
-            continue;
-        }
+            while ((c=getchar())!= ' ' && c!= EOF && c!='\n') {
 
-        while (piece !=NULL) {
-  
-            if ((sscanf(piece, "%lf%c", &number, &extra))!=1) {
-                printf("Ошибка: %s не число.\n", piece);
-                printf("Ввод последовательности чисел через пробел заново:\n");
-                ok=0;
+                if (len_piece== piece_capacity-1) {
+
+                    temp = malloc(piece_capacity*2);
+                    
+                    if (temp == NULL) {
+                        printf("Не удалось выделить память!\n");
+                        return 1;
+                    }
+
+                    piece_capacity *=2;
+
+                    for (int i=0; i<len_piece; i++) {
+                        *(temp + i) = *(piece + i);
+                    }
+
+                    free(piece);
+                    piece = temp;
+
+                }
+
+                *(piece + len_piece) = (char)c;
+                len_piece++;
+                *(piece + len_piece) = '\0';
+
+            }
+
+            if (c==EOF) {
+                printf("\nПользователь ввел EOF! Программа завершена\n");
+                return 1;
+            }
+
+            // printf("кусочек: %s\n", piece);
+            // printf("длина: %d\n", len_piece);
+
+            if (len_piece==0 && c!='\n') {
+                scanf("%*[^\n]%*c");
+                ok=1;
+
+                free(piece);
+
+                clear_deq(deque);
+
+                printf("Ошибка! space - не может быть числом!\n");
                 break;
             }
 
-            for (int i=0; *(piece + i)!='\0'; i++) {
-                index = i;
+            if ((v_f = digit(piece, len_piece-1))==0) {
+                if (push_back(deque, strtod(piece, NULL)) == 1) {
+                    printf("Ошибка выделения памяти для узла!");
+                    free(piece);
+                    clear_deq(deque);
+                    return 1;
+                }
+
+            } else {
+
+                if (c != '\n') {
+                    // printf("\nочистил!\n");
+                    scanf("%*[^\n]%*c");
+                }
+
+                if (v_f==1) {
+                    printf("Ошибка! %s - не число! Попробуйте заново!\n", piece);
+
+                } else {
+                    printf("Ошибка! Введенное число %s не лежит в диапозоне от %d до %d\n", piece, INT_MIN, INT_MAX);
+
+                }
+
+                clear_deq(deque);
+                ok=1;
             }
 
-            if (piece + index + 1 == seq + len - 1) {
+            free(piece);
+            piece_capacity = START_MEMORY;
+            len_piece=0;
+
+            if (c=='\n' || ok==1) {
                 break;
             }
-            
-            piece = piece + index+2;
-            piece = strtok(piece, " ");
-            index=0;
-
         }
-
-        if (ok!=0) {
+        
+        if (ok==0) {
             break;
         }
 
     }
 
+    printf("\nДЕК:\n");
+    
+    start = deque->front;
 
-    for (size_t i = 0; i + 1 < len; i++) {
-        if (*(seq + i) == '\0') {
-            *(seq + i) = ' ';
+    while (start !=NULL) {
+
+        if (start->next == NULL) {
+            printf("%g\n", start->value);
+        } else {
+            printf("%g ", start->value);
         }
+
+        start = start->next;
+
     }
 
+    // printf("\nОТСОРТИРОВАННЫЙ ДЕК:\n");
 
-    printf("Текст: %s\n", seq);
+    
 
-    free(seq);
-
+    clear_deq(deque);
     return 0;
 
 }
