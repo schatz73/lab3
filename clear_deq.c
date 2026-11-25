@@ -6,11 +6,17 @@
 void clear_deq(struct Deque *deque) {
 
     struct Node *box = deque->front;
+    struct Node *next;
+    
 
     while (box != NULL) {
-        struct Node *next_box = box->next;
+
+        next = box->next;
+
         free(box);
-        box = next_box;
+
+        box = next;
+        
     }
 
     deque->front = NULL;
