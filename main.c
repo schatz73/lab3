@@ -3,18 +3,27 @@
 #include <string.h>
 #include <limits.h>
 
-
 #include "headers.h"
 #include "push_back.c"
 #include "digit.c"
 #include "clear_deq.c"
-
+#include "buble_sort.c"
+#include "pyramidal_sort.c"
 
 
 int main() {
 
     struct Deque d = {0};
     struct Deque *deque = &d;
+
+    struct Deque d_sort_buble = {0};
+    struct Deque d_sort_pyramidal = {0};
+
+    // struct Deque d_sort_buble_copy = {0};
+    // struct Deque d_sort_pyramidal_copy = {0};
+
+    struct Deque *deque_sorted_buble = &d_sort_buble;
+    struct Deque *deque_sorted_pyramidal = &d_sort_pyramidal;
 
     struct Node *start;
 
@@ -27,15 +36,12 @@ int main() {
     int v_f=0;
     int ok=0;
     
-
     while (1) {
         ok=0;
         piece_capacity = START_MEMORY;
 
-
         printf("Введите последовательность чисел через пробел!\n");
         printf("Числа должны быть от %d до %d\n", INT_MIN, INT_MAX);
-
 
         while (2) {
 
@@ -136,6 +142,12 @@ int main() {
 
     }
 
+    // d_sort_buble_copy = d;
+    // d_sort_pyramidal_copy = d;
+
+    deque_sorted_buble = &d_sort_buble;
+    deque_sorted_pyramidal = &d_sort_pyramidal;
+
     printf("\nДЕК:\n");
     
     start = deque->front;
@@ -152,12 +164,53 @@ int main() {
 
     }
 
-    // printf("\nОТСОРТИРОВАННЫЙ ДЕК:\n");
+    printf("\nОТСОРТИРОВАННЫЙ ДЕК ПУЗЫРЬКОМ:\n");
+
+    if (buble_sort(d, deque_sorted_buble) == 1) {
+        printf("Не удалось выделить память!\n");
+        return 1;
+    }
+        
+    start = deque_sorted_buble->front;
+
+    while (start !=NULL) {
+
+        if (start->next == NULL) {
+            printf("%g\n", start->value);
+        } else {
+            printf("%g ", start->value);
+        }
+
+        start = start->next;
+
+    }
+
+    printf("\nОТСОРТИРОВАННЫЙ ДЕК ПИРАМИДКОЙ:\n");
+    
+    if (pyramidal_sort(d, deque_sorted_pyramidal) == 1) {
+        printf("Не удалось выделить память!\n");
+        return 1;
+    }
+
+    start = deque_sorted_pyramidal->front;
+
+    while (start !=NULL) {
+
+        if (start->next == NULL) {
+            printf("%g\n", start->value);
+        } else {
+            printf("%g ", start->value);
+        }
+
+        start = start->next;
+
+    }
 
     
-
     clear_deq(deque);
+    clear_deq(deque_sorted_buble);
+    clear_deq(deque_sorted_pyramidal);
+
     return 0;
 
 }
-
